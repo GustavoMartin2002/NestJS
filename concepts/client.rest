@@ -1,0 +1,29 @@
+@baseURL = http://localhost:3000
+
+### HomePage
+# @name HomePage
+GET {{baseURL}}/home
+
+### AppControllerGetHello
+# @name AppControllerGetHello
+GET {{baseURL}}/home/hello
+
+### AnotherRoute
+# @name AnotherRoute
+GET {{baseURL}}/home/example
+
+### ManualModule
+# @name ManualModule
+GET {{baseURL}}/concepts-manual
+
+### ManualModuleSum
+# @name ManualModuleSum
+GET {{baseURL}}/concepts-manual/sum
+
+### AutomaticModule
+# @name AutomaticModule
+GET {{baseURL}}/concepts-automatic
+
+### AutomaticModuleSum
+# @name AutomaticModuleSum
+GET {{baseURL}}/concepts-automatic/sum
