@@ -1,21 +1,24 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PersonService } from 'src/person/person.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class MessagesService {
-  private lastId = 1; // dynamic id for test
-  private messages: Message[] = [
-    {
-      id: 1,
-      text: 'text test 1',
-      from: 'Gustavo',
-      to: 'Mirele',
-      read: true,
-      date: new Date(),
-    },
-  ];
+  constructor(
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
+    private readonly personSevice: PersonService,
+  ) {}
 
   // error function
   errorNotFound() {
@@ -23,72 +26,119 @@ export class MessagesService {
   }
 
   // find all messages
-  findAll() {
-    if (!this.messages) {
-      this.errorNotFound();
+  async findAll(paginationDto?: PaginationDto) {
+    try {
+      const { limit = 10, offset = 0 } = paginationDto ?? {};
+      const messages = await this.messageRepository.find({
+        take: limit, // page display
+        skip: offset, // skipped records
+        relations: ['from', 'to'],
+        order: {
+          id: 'desc',
+        },
+        select: {
+          from: {
+            id: true,
+            name: true,
+          },
+          to: {
+            id: true,
+            name: true,
+          },
+        },
+      });
+      return messages;
+    } catch {
+      return this.errorNotFound();
     }
-
-    return this.messages;
   }
 
   // find one message
-  finOne(id: number) {
-    const findMessage = this.messages.find((message) => message.id === id);
+  async finOne(id: number) {
+    try {
+      const message = await this.messageRepository.findOneBy({
+        id,
+      });
 
-    if (!findMessage) return this.errorNotFound();
+      if (!message) {
+        throw new NotFoundException('Mensagem não encontrada.');
+      }
 
-    return findMessage;
+      return message;
+    } catch {
+      return this.errorNotFound();
+    }
   }
 
   // create message
-  create(createMessage: CreateMessageDto) {
-    this.lastId++;
-    const id: number = this.lastId;
-
-    const newMessage = {
-      id,
-      ...createMessage,
-      read: false,
-      date: new Date(),
-    };
-
+  async create(createMessageDto: CreateMessageDto) {
     try {
-      this.messages.push(newMessage);
-      return newMessage;
-    } catch (e) {
-      this.errorNotFound();
-      console.log(e);
+      const { fromId, toId } = createMessageDto;
+      const from = await this.personSevice.findOne(fromId);
+      const to = await this.personSevice.findOne(toId);
+
+      if (!from || from instanceof NotFoundException) {
+        throw new NotFoundException('Remetente não encontrado.');
+      }
+      if (!to || to instanceof NotFoundException) {
+        throw new NotFoundException('Destinatário não encontrado.');
+      }
+
+      const newMessage = {
+        text: createMessageDto.text,
+        from,
+        to,
+        read: false,
+        date: new Date(),
+      };
+
+      const message = this.messageRepository.create(newMessage);
+      await this.messageRepository.save(message);
+
+      return {
+        ...message,
+        from: {
+          id: message.from.id,
+        },
+        to: {
+          id: message.to.id,
+        },
+      };
+    } catch {
+      return this.errorNotFound();
     }
   }
 
   // update message
-  update(id: number, updateMessage: UpdateMessageDto) {
-    const messageIndex = this.messages.findIndex(
-      (message) => message.id === id,
-    );
+  async update(id: number, updateMessageDto: UpdateMessageDto) {
+    try {
+      const message = await this.finOne(id);
 
-    if (messageIndex >= 0) {
-      const oldMessage = this.messages[messageIndex];
+      if (!message) return new NotFoundException('Mensagem não encontrada.');
 
-      return {
-        ...oldMessage,
-        ...updateMessage,
-      };
+      message.text = updateMessageDto?.text ?? message.text;
+      message.read = updateMessageDto?.read ?? message.read;
+
+      await this.messageRepository.save(message);
+      return message;
+    } catch {
+      return this.errorNotFound();
     }
-
-    this.errorNotFound();
   }
 
   // delete message
-  remove(id: number) {
-    const messageIndex = this.messages.findIndex(
-      (message) => message.id === id,
-    );
+  async remove(id: number) {
+    try {
+      const message = await this.messageRepository.findOneBy({
+        id,
+      });
 
-    if (messageIndex >= 0) {
-      return this.messages.splice(messageIndex, 1);
+      if (!message) return new NotFoundException('Mensagem não encontrada.');
+
+      await this.messageRepository.remove(message);
+      return message;
+    } catch {
+      return this.errorNotFound();
     }
-
-    this.errorNotFound();
   }
 }
