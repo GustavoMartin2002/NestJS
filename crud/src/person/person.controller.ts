@@ -23,8 +23,19 @@ export class PersonController {
     return this.personService.create(createPersonDto);
   }
 
+  // @UseInterceptors(AddHeaderInterceptor)
+  // @UseInterceptors(TimingConnectionInterceptor)
+  // @UseInterceptors(ErrorHandlingInterceptor)
+  // @UseInterceptors(SimpleCacheInterceptor)
+  // @UseInterceptors(ChangeDataInterceptor)
+  // @UseInterceptors(AuthTokenInterceptor)
+  // @UseGuards(IsAdminGuard)
   @Get()
-  findAll(@Query() paginationDto?: PaginationDto) {
+  findAll(@Query() paginationDto: PaginationDto) {
+    // console.log(req['user']);
+    // throw new BadRequestException('MENSAGEM')
+    // console.log(url)
+    // console.log(method);
     return this.personService.findAll(paginationDto);
   }
 

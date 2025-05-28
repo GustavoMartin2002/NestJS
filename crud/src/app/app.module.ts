@@ -21,6 +21,19 @@ import { PersonModule } from 'src/person/person.module';
     PersonModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: ErrorExceptionFilter,
+    // },
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(SimpleMiddleware).forRoutes({
+  //     path: '*',
+  //     method: RequestMethod.ALL,
+  //   });
+  // }
+}
