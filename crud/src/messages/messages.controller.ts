@@ -31,7 +31,9 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly messageService: MessagesService) {}
+  constructor(
+    private readonly messageService: MessagesService,
+  ) {}
 
   // find all messages
   // @HttpCode(200)

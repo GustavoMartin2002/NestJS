@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  Scope,
 } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -12,7 +13,11 @@ import { Repository } from 'typeorm';
 import { PersonService } from 'src/person/person.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
-@Injectable()
+// Scope.DEFAULT -> the provider is a singleton
+// Scope.REQUEST -> the provider is instantiated on each request
+// Scope.TRANSIENT -> an instance of the provider is created in each class that injects that provider
+
+@Injectable({ scope: Scope.DEFAULT })
 export class MessagesService {
   constructor(
     @InjectRepository(Message)
