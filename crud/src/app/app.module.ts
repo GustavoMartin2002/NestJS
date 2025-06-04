@@ -4,18 +4,35 @@ import { AppService } from './app.service';
 import { MessagesModule } from '../messages/messages.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PersonModule } from 'src/person/person.module';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      // envFilePath: '.env',
+      // ignoreEnvFile: true,
+      // load: [appConfig],
+      validationSchema: Joi.object({
+        DATABASE_TYPE: Joi.required(),
+        DATABASE_HOST: Joi.required(),
+        DATABASE_PORT: Joi.number().default(5432),
+        DATABASE_USERNAME: Joi.required(),
+        DATABASE_PASSWORD: Joi.required(),
+        DATABASE_DATABASE: Joi.required(),
+        DATABASE_AUTO_LOAD_ENTITIES: Joi.number().min(0).max(1).default(0),
+        DATABASE_SYNCHRONIZE: Joi.number().min(0).max(1).default(0),
+      }),
+    }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '0109',
-      database: 'crud',
-      autoLoadEntities: true, // loading entities without the need to specify
-      synchronize: true, // synchronize with the database. Do not use in production.
+      type: process.env.DATABASE_TYPE as 'postgres', 
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_DATABASE,
+      autoLoadEntities: Boolean(process.env.DATABASE_AUTO_LOAD_ENTITIES), // loading entities without the need to specify
+      synchronize: Boolean(process.env.DATABASE_SYNCHRONIZE), // synchronize with the database. Do not use in production.
     }),
     MessagesModule,
     PersonModule,
