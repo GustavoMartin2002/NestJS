@@ -16,9 +16,9 @@ export class Person {
 
   @Column({ type: 'varchar', length: 255, unique: true })
   @IsEmail()
-  email: number;
+  email: string;
 
-  @Column({ type: 'varchar', length: 50 })
+  @Column({ type: 'varchar', length: 100 })
   passwordHash: string;
 
   @Column({ type: 'varchar', length: 100 })
@@ -39,4 +39,7 @@ export class Person {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @Column({ default: true })
+  active: boolean;
 }

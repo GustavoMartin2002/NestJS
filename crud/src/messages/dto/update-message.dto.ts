@@ -16,5 +16,5 @@ export class UpdateMessageDto extends PartialType(CreateMessageDto) {
   readonly text: string; // this input is not optional
 
   @IsBoolean()
-  readonly read: boolean;
+  readonly read?: boolean;
 }

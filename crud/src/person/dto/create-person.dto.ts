@@ -8,7 +8,7 @@ import {
 
 export class CreatePersonDto {
   @IsEmail()
-  email: number;
+  email: string;
 
   @IsString()
   @IsNotEmpty()

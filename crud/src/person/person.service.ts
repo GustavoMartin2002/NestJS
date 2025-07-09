@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -11,12 +12,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Person } from './entities/person.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class PersonService {
   constructor(
     @InjectRepository(Person)
     private readonly personRepository: Repository<Person>,
+    private readonly hashingService: HashingServiceProtocol,
   ) {}
 
   // error function
@@ -26,19 +30,25 @@ export class PersonService {
 
   async create(createPersonDto: CreatePersonDto) {
     try {
+      const passwordHash = await this.hashingService.hash(
+        createPersonDto.password,
+      );
+
       const personData = {
         name: createPersonDto.name,
         email: createPersonDto.email,
-        passwordHash: createPersonDto.password,
+        passwordHash,
       };
+
       const newPerson = this.personRepository.create(personData);
       await this.personRepository.save(newPerson);
+      
       return newPerson;
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('E-mail já está cadastrado.');
       } else {
-        return this.errorNotFound();
+        throw error
       }
     }
   }
@@ -76,12 +86,18 @@ export class PersonService {
     }
   }
 
-  async update(id: number, updatePersonDto: UpdatePersonDto) {
+  async update(id: number, updatePersonDto: UpdatePersonDto, tokenPayload: TokenPayloadDto) {
     try {
       const personData = {
         name: updatePersonDto?.name,
-        passwordHash: updatePersonDto.password,
       };
+
+      if (updatePersonDto?.password) {
+        const passwordHash = await this.hashingService.hash(
+          updatePersonDto.password,
+        );
+        personData['passwordHash'] = passwordHash;
+      }
 
       const person = await this.personRepository.preload({
         id,
@@ -89,7 +105,8 @@ export class PersonService {
       });
 
       if (!person) return new NotFoundException('Pessoa não encontrada.');
-
+      if (person.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar.')
+      
       await this.personRepository.save(person);
       return person;
     } catch {
@@ -97,16 +114,16 @@ export class PersonService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, tokenPayload: TokenPayloadDto) {
     try {
       const person = await this.personRepository.findOneBy({
         id,
       });
 
       if (!person) return new NotFoundException('Pessoa não encontrada.');
+      if (person.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar.');
 
       await this.personRepository.remove(person);
-
       return person;
     } catch {
       return this.errorNotFound();

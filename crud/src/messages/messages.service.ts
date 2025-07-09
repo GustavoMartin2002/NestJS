@@ -1,9 +1,11 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
   NotFoundException,
   Scope,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -12,6 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PersonService } from 'src/person/person.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 // Scope.DEFAULT -> the provider is a singleton
 // Scope.REQUEST -> the provider is instantiated on each request
@@ -59,10 +62,26 @@ export class MessagesService {
   }
 
   // find one message
-  async finOne(id: number) {
+  async findOne(id: number) {
     try {
-      const message = await this.messageRepository.findOneBy({
-        id,
+      const message = await this.messageRepository.findOne({
+        where: { 
+          id,
+        },
+        relations: ['from', 'to'],
+        order: {
+          id:'desc'
+        },
+        select: {
+          from: {
+            id: true,
+            name: true,
+          },
+          to: {
+            id: true,
+            name: true,
+          },
+        },
       });
 
       if (!message) {
@@ -76,10 +95,10 @@ export class MessagesService {
   }
 
   // create message
-  async create(createMessageDto: CreateMessageDto) {
+  async create(createMessageDto: CreateMessageDto, tokenPayload: TokenPayloadDto) {
     try {
-      const { fromId, toId } = createMessageDto;
-      const from = await this.personSevice.findOne(fromId);
+      const { toId } = createMessageDto;
+      const from = await this.personSevice.findOne(tokenPayload.sub);
       const to = await this.personSevice.findOne(toId);
 
       if (!from || from instanceof NotFoundException) {
@@ -104,9 +123,11 @@ export class MessagesService {
         ...message,
         from: {
           id: message.from.id,
+          name: message.from.name,
         },
         to: {
           id: message.to.id,
+          name: message.to.name,
         },
       };
     } catch {
@@ -115,11 +136,12 @@ export class MessagesService {
   }
 
   // update message
-  async update(id: number, updateMessageDto: UpdateMessageDto) {
+  async update(id: number, updateMessageDto: UpdateMessageDto, tokenPayload: TokenPayloadDto) {
     try {
-      const message = await this.finOne(id);
+      const message = await this.findOne(id);
 
-      if (!message) return new NotFoundException('Mensagem não encontrada.');
+      if (!message) throw new NotFoundException('Mensagem não encontrada.');
+      if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar essa mensagem.');
 
       message.text = updateMessageDto?.text ?? message.text;
       message.read = updateMessageDto?.read ?? message.read;
@@ -132,13 +154,12 @@ export class MessagesService {
   }
 
   // delete message
-  async remove(id: number) {
+  async remove(id: number, tokenPayload: TokenPayloadDto) {
     try {
-      const message = await this.messageRepository.findOneBy({
-        id,
-      });
+      const message = await this.findOne(id);
 
-      if (!message) return new NotFoundException('Mensagem não encontrada.');
+      if (!message) throw new NotFoundException('Mensagem não encontrada.');
+      if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para deletar essa mensagem.');
 
       await this.messageRepository.remove(message);
       return message;
