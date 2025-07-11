@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   HttpException,
@@ -14,6 +15,8 @@ import { Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import * as path from 'path';
+import * as fs from 'fs/promises';
 
 @Injectable()
 export class PersonService {
@@ -78,7 +81,7 @@ export class PersonService {
         id,
       });
 
-      if (!person) return new NotFoundException('Pessoa não encontrada.');
+      if (!person) throw new NotFoundException('Pessoa não encontrada.');
 
       return person;
     } catch {
@@ -128,5 +131,29 @@ export class PersonService {
     } catch {
       return this.errorNotFound();
     }
+  }
+
+  async uploadPicture(
+    file: Express.Multer.File, 
+    tokenPayload: TokenPayloadDto,
+  ) {
+    const person = await this.findOne(tokenPayload.sub);
+
+    if(!person) throw new NotFoundException('Falha ao encontrar usuário.');
+    if (file.size < 1024) throw new BadRequestException('Arquivo muito pequeno!');
+    
+    const fileExtension = path
+      .extname(file.originalname)
+      .toLowerCase()
+      .substring(1);
+    const fileName = `${tokenPayload.sub}.${fileExtension}`;
+    const fileFullPath = path.resolve(process.cwd(), 'pictures', fileName);
+
+    await fs.writeFile(fileFullPath, file.buffer);
+
+    person.picture = fileName;
+    await this.personRepository.save(person);
+
+    return person;
   }
 }

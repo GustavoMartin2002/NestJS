@@ -19,8 +19,8 @@ export class AuthTokenGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: Request = context.switchToHttp().getRequest()
-    const token = this.extractTokenFromHeader(request)
+    const request: Request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
 
     if(!token) throw new UnauthorizedException('Usuário não logado!');
 
@@ -37,9 +37,9 @@ export class AuthTokenGuard implements CanActivate {
 
       if(!person) throw new UnauthorizedException('Usuário não autorizado!');
 
-      payload['person'] = person
+      payload['person'] = person;
 
-      request[REQUEST_TOKEN_PAYLOAD_KEY] = payload
+      request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }

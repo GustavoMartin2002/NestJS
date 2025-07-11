@@ -26,7 +26,7 @@ export class AuthService {
       active: true,
     });
 
-    if (!person) throw new UnauthorizedException('Email inválido!');
+    if (!person) throw new UnauthorizedException('Usuário não autorizado!');
     
     const passwordIsValid = await this.hashingService.compare(
       loginDto.password,
@@ -66,14 +66,14 @@ export class AuthService {
       const { sub } = await this.jwtService.verifyAsync(
         refreshTokenDto.refreshToken,
         this.jwtConfiguration,
-      )
+      );
 
       const person = await this.personRepository.findOneBy({
         id: sub,
         active: true,
       });
 
-      if(!person) throw new Error('Usuário não autorizado.')
+      if(!person) throw new Error('Usuário não autorizado.');
 
       return this.createTokens(person);
     } catch(error) {

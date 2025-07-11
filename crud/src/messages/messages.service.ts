@@ -5,7 +5,6 @@ import {
   Injectable,
   NotFoundException,
   Scope,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
