@@ -1,7 +1,5 @@
 import {
   ForbiddenException,
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   Scope,
@@ -27,143 +25,115 @@ export class MessagesService {
     private readonly personSevice: PersonService,
   ) {}
 
-  // error function
-  errorNotFound() {
-    throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
-  }
-
   // find all messages
   async findAll(paginationDto?: PaginationDto) {
-    try {
-      const { limit = 10, offset = 0 } = paginationDto ?? {};
-      const messages = await this.messageRepository.find({
-        take: limit, // page display
-        skip: offset, // skipped records
-        relations: ['from', 'to'],
-        order: {
-          id: 'desc',
+    const { limit = 10, offset = 0 } = paginationDto ?? {};
+    const messages = await this.messageRepository.find({
+      take: limit, // page display
+      skip: offset, // skipped records
+      relations: ['from', 'to'],
+      order: {
+        id: 'desc',
+      },
+      select: {
+        from: {
+          id: true,
+          name: true,
         },
-        select: {
-          from: {
-            id: true,
-            name: true,
-          },
-          to: {
-            id: true,
-            name: true,
-          },
+        to: {
+          id: true,
+          name: true,
         },
-      });
-      return messages;
-    } catch {
-      return this.errorNotFound();
-    }
+      },
+    });
+
+    if (!messages) throw new NotFoundException('Mensagens não encontradas.');
+
+    return messages;
   }
 
   // find one message
   async findOne(id: number) {
-    try {
-      const message = await this.messageRepository.findOne({
-        where: { 
-          id,
+    const message = await this.messageRepository.findOne({
+      where: { 
+        id,
+      },
+      relations: ['from', 'to'],
+      order: {
+        id:'desc'
+      },
+      select: {
+        from: {
+          id: true,
+          name: true,
         },
-        relations: ['from', 'to'],
-        order: {
-          id:'desc'
+        to: {
+          id: true,
+          name: true,
         },
-        select: {
-          from: {
-            id: true,
-            name: true,
-          },
-          to: {
-            id: true,
-            name: true,
-          },
-        },
-      });
+      },
+    });
 
-      if (!message) {
-        throw new NotFoundException('Mensagem não encontrada.');
-      }
+    if (!message) throw new NotFoundException('Mensagem não encontrada.');
 
-      return message;
-    } catch {
-      return this.errorNotFound();
-    }
+    return message;
   }
 
   // create message
   async create(createMessageDto: CreateMessageDto, tokenPayload: TokenPayloadDto) {
-    try {
-      const { toId } = createMessageDto;
-      const from = await this.personSevice.findOne(tokenPayload.sub);
-      const to = await this.personSevice.findOne(toId);
+    const { toId } = createMessageDto;
+    const from = await this.personSevice.findOne(tokenPayload.sub);
+    const to = await this.personSevice.findOne(toId);
 
-      if (!from || from instanceof NotFoundException) {
-        throw new NotFoundException('Remetente não encontrado.');
-      }
-      if (!to || to instanceof NotFoundException) {
-        throw new NotFoundException('Destinatário não encontrado.');
-      }
+    if (!from) throw new NotFoundException('Remetente não encontrado.');
+    if (!to) throw new NotFoundException('Destinatário não encontrado.');
 
-      const newMessage = {
-        text: createMessageDto.text,
-        from,
-        to,
-        read: false,
-        date: new Date(),
-      };
+    const newMessage = {
+      text: createMessageDto.text,
+      from,
+      to,
+      read: false,
+      date: new Date(),
+    };
 
-      const message = this.messageRepository.create(newMessage);
-      await this.messageRepository.save(message);
+    const message = this.messageRepository.create(newMessage);
+    await this.messageRepository.save(message);
 
-      return {
-        ...message,
-        from: {
-          id: message.from.id,
-          name: message.from.name,
-        },
-        to: {
-          id: message.to.id,
-          name: message.to.name,
-        },
-      };
-    } catch {
-      return this.errorNotFound();
-    }
+    return {
+      ...message,
+      from: {
+        id: message.from.id,
+        name: message.from.name,
+      },
+      to: {
+        id: message.to.id,
+        name: message.to.name,
+      },
+    };
   }
 
   // update message
   async update(id: number, updateMessageDto: UpdateMessageDto, tokenPayload: TokenPayloadDto) {
-    try {
-      const message = await this.findOne(id);
+    const message = await this.findOne(id);
 
-      if (!message) throw new NotFoundException('Mensagem não encontrada.');
-      if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar essa mensagem.');
+    if (!message) throw new NotFoundException('Mensagem não encontrada.');
+    if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar essa mensagem.');
 
-      message.text = updateMessageDto?.text ?? message.text;
-      message.read = updateMessageDto?.read ?? message.read;
+    message.text = updateMessageDto?.text ?? message.text;
+    message.read = updateMessageDto?.read ?? message.read;
 
-      await this.messageRepository.save(message);
-      return message;
-    } catch {
-      return this.errorNotFound();
-    }
+    await this.messageRepository.save(message);
+    return message;
   }
 
   // delete message
   async remove(id: number, tokenPayload: TokenPayloadDto) {
-    try {
-      const message = await this.findOne(id);
+    const message = await this.findOne(id);
 
-      if (!message) throw new NotFoundException('Mensagem não encontrada.');
-      if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para deletar essa mensagem.');
+    if (!message) throw new NotFoundException('Mensagem não encontrada.');
+    if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para deletar essa mensagem.');
 
-      await this.messageRepository.remove(message);
-      return message;
-    } catch {
-      return this.errorNotFound();
-    }
+    await this.messageRepository.remove(message);
+    return message;
   }
 }

@@ -11,8 +11,8 @@ export class CreateMessageDto {
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(255)
-  readonly text: string;
+  text: string;
 
   @IsPositive()
-  readonly toId: number;
+  toId: number;
 }

@@ -39,20 +39,17 @@ export class AuthService {
   }
 
   private async createTokens(person: Person) {
-    const accessTokenPromise = await this.signJwtAsync(
-      person.id, 
-      this.jwtConfiguration.jwtTtl, 
-      { email: person.email },
-    );
-
-    const refreshTokenPromise = await this.signJwtAsync(
-      person.id,
-      this.jwtConfiguration.jwtRefreshTtl,
-    );
-
     const [accessToken, refreshToken] = await Promise.all([
-      accessTokenPromise,
-      refreshTokenPromise
+      this.signJwtAsync(
+        person.id, 
+        this.jwtConfiguration.jwtTtl, 
+        { email: person.email },
+      ),
+      this.signJwtAsync(
+        person.id,
+        this.jwtConfiguration.jwtRefreshTtl,
+        { timestamp: Date.now() }
+      ),
     ]);
     
     return {
@@ -91,7 +88,7 @@ export class AuthService {
         audience: this.jwtConfiguration.audience,
         issuer: this.jwtConfiguration.issuer,
         secret: this.jwtConfiguration.secret,
-        expiresIn,
+        expiresIn: `${expiresIn}s`,
       }
     );
   }

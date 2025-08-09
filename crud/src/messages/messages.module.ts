@@ -16,8 +16,6 @@ import { MyDynamicModule } from 'src/my-dynamic/my-dynamic.module';
     }),
   ],
   controllers: [MessagesController],
-  providers: [
-    MessagesService,
-  ],
+  providers: [MessagesService],
 })
 export class MessagesModule {}

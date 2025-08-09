@@ -27,7 +27,7 @@ export class Message {
   createdAt?: Date;
 
   @UpdateDateColumn() // generate a new date when updating
-  updateAt?: Date;
+  updatedAt?: Date;
 
   // many messages are sent by one person
   // specify the "from" column and save the id

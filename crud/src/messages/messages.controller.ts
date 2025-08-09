@@ -17,9 +17,6 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
-import { RoutePolicyGuard } from 'src/auth/guards/route-policy.guard';
-import { SetRoutePolicy } from 'src/auth/decorators/set-route-policy.decorator';
-import { RoutePolicies } from 'src/auth/enum/route-policies.enum';
 
 // CRUD
 // Create -> POST -> create message
@@ -41,12 +38,14 @@ export class MessagesController {
 
   // find all messages
   // @HttpCode(200)
+  @UseGuards(AuthTokenGuard)
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.messageService.findAll(paginationDto);
   }
 
   // find one message
+  @UseGuards(AuthTokenGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.messageService.findOne(id);

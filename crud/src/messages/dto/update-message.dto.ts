@@ -3,6 +3,7 @@ import { CreateMessageDto } from './create-message.dto';
 import {
   IsBoolean,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -16,5 +17,6 @@ export class UpdateMessageDto extends PartialType(CreateMessageDto) {
   readonly text: string; // this input is not optional
 
   @IsBoolean()
+  @IsOptional()
   readonly read?: boolean;
 }
