@@ -9,9 +9,19 @@ import * as Joi from 'joi';
 import { AuthModule } from 'src/auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10000, // time to live em ms
+          limit: 10, // máximo de requests durante o ttl
+          blockDuration: 5000, // tempo de bloqueio
+        },
+      ],
+    }),
     ConfigModule.forRoot({
       // envFilePath: '.env',
       // ignoreEnvFile: true,
@@ -28,7 +38,7 @@ import * as path from 'path';
       }),
     }),
     TypeOrmModule.forRoot({
-      type: process.env.DATABASE_TYPE as 'postgres', 
+      type: process.env.DATABASE_TYPE as 'postgres',
       host: process.env.DATABASE_HOST,
       port: Number(process.env.DATABASE_PORT),
       username: process.env.DATABASE_USERNAME,
@@ -38,7 +48,7 @@ import * as path from 'path';
       synchronize: Boolean(process.env.DATABASE_SYNCHRONIZE), // synchronize with the database. Do not use in production.
     }),
     ServeStaticModule.forRoot({
-      rootPath:path.resolve(__dirname, '..', '..', 'pictures'),
+      rootPath: path.resolve(__dirname, '..', '..', 'pictures'),
       serveRoot: '/pictures',
     }),
     MessagesModule,
@@ -48,6 +58,10 @@ import * as path from 'path';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: ThrottlerGuard,
+    },
     // {
     //   provide: APP_FILTER,
     //   useClass: ErrorExceptionFilter,

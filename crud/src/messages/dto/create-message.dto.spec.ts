@@ -1,8 +1,8 @@
-import { validate } from "class-validator";
-import { CreateMessageDto } from "./create-message.dto";
+import { validate } from 'class-validator';
+import { CreateMessageDto } from './create-message.dto';
 
-describe('CreateMessageDto', ()=> {
-  test('valid DTO', async ()=> {
+describe('CreateMessageDto', () => {
+  test('valid DTO', async () => {
     const dto = new CreateMessageDto();
     dto.text = 'Hello, world!';
     dto.toId = 1;
@@ -11,7 +11,7 @@ describe('CreateMessageDto', ()=> {
     expect(errors.length).toBe(0);
   });
 
-  test('invalid DTO - empty text', async ()=>{
+  test('invalid DTO - empty text', async () => {
     const dto = new CreateMessageDto();
     dto.text = '';
     dto.toId = 1;
@@ -22,7 +22,7 @@ describe('CreateMessageDto', ()=> {
     expect(errors[0].property).toBe('text');
   });
 
-   test('invalid DTO - small text', async ()=>{
+  test('invalid DTO - small text', async () => {
     const dto = new CreateMessageDto();
     dto.text = 'he';
     dto.toId = 1;
@@ -33,7 +33,7 @@ describe('CreateMessageDto', ()=> {
     expect(errors[0].property).toBe('text');
   });
 
-  test('invalid DTO - big text', async ()=>{
+  test('invalid DTO - big text', async () => {
     const dto = new CreateMessageDto();
     dto.text = '';
     for (let i = 0; i <= 256; i++) {

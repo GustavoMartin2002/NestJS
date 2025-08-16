@@ -1,7 +1,7 @@
-import { INestApplication, ValidationPipe } from "@nestjs/common"
-import { ParseIntIdPipe } from "src/common/pipes/parse-int-id.pipe";
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ParseIntIdPipe } from 'src/common/pipes/parse-int-id.pipe';
 
-export default (app: INestApplication)=> {
+export default (app: INestApplication) => {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, //  remove keys that are not in dto
@@ -11,4 +11,4 @@ export default (app: INestApplication)=> {
     new ParseIntIdPipe(),
   );
   return app;
-}
+};

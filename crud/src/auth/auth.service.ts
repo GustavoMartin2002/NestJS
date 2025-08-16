@@ -27,7 +27,7 @@ export class AuthService {
     });
 
     if (!person) throw new UnauthorizedException('Usuário não autorizado!');
-    
+
     const passwordIsValid = await this.hashingService.compare(
       loginDto.password,
       person.passwordHash,
@@ -40,18 +40,14 @@ export class AuthService {
 
   private async createTokens(person: Person) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.signJwtAsync(
-        person.id, 
-        this.jwtConfiguration.jwtTtl, 
-        { email: person.email },
-      ),
-      this.signJwtAsync(
-        person.id,
-        this.jwtConfiguration.jwtRefreshTtl,
-        { timestamp: Date.now() }
-      ),
+      this.signJwtAsync(person.id, this.jwtConfiguration.jwtTtl, {
+        email: person.email,
+      }),
+      this.signJwtAsync(person.id, this.jwtConfiguration.jwtRefreshTtl, {
+        timestamp: Date.now(),
+      }),
     ]);
-    
+
     return {
       accessToken,
       refreshToken,
@@ -70,15 +66,15 @@ export class AuthService {
         active: true,
       });
 
-      if(!person) throw new Error('Usuário não autorizado.');
+      if (!person) throw new Error('Usuário não autorizado.');
 
       return this.createTokens(person);
-    } catch(error) {
+    } catch (error) {
       throw new UnauthorizedException(error.message);
     }
   }
 
-  private async signJwtAsync<T>(sub:number, expiresIn: number, payload?: T) {
+  private async signJwtAsync<T>(sub: number, expiresIn: number, payload?: T) {
     return await this.jwtService.signAsync(
       {
         sub,
@@ -89,7 +85,7 @@ export class AuthService {
         issuer: this.jwtConfiguration.issuer,
         secret: this.jwtConfiguration.secret,
         expiresIn: `${expiresIn}s`,
-      }
+      },
     );
   }
 }

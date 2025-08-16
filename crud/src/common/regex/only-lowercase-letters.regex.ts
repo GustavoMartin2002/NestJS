@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { RegexProtocol } from "./regex.protocol";
+import { Injectable } from '@nestjs/common';
+import { RegexProtocol } from './regex.protocol';
 
 @Injectable()
 export class OnlyLowercaseLettersRegex extends RegexProtocol {

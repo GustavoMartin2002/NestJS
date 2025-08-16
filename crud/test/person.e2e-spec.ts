@@ -24,7 +24,7 @@ describe('PersonController (e2e)', () => {
       imports: [
         ConfigModule.forRoot({}),
         TypeOrmModule.forRoot({
-          type: process.env.DATABASE_TYPE as 'postgres', 
+          type: process.env.DATABASE_TYPE as 'postgres',
           host: process.env.DATABASE_HOST,
           port: Number(process.env.DATABASE_PORT),
           username: process.env.DATABASE_USERNAME,
@@ -60,12 +60,12 @@ describe('PersonController (e2e)', () => {
     };
   });
 
-  afterEach(async ()=> {
+  afterEach(async () => {
     await app.close();
   });
 
-  describe('/person (POST) - create', ()=>{
-    test('success, create a person', async ()=> {
+  describe('/person (POST) - create', () => {
+    test('success, create a person', async () => {
       const response = await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto)
@@ -84,7 +84,7 @@ describe('PersonController (e2e)', () => {
       });
     });
 
-    test('error, email already used', async ()=> {
+    test('error, email already used', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto)
@@ -111,38 +111,38 @@ describe('PersonController (e2e)', () => {
   //     }
   //   });
 
-    // test('success, upload a picture', async ()=> {
-    //   await request(app.getHttpServer())
-    //     .post('/person')
-    //     .send({ ...createPersonDto })
-    //     .expect(HttpStatus.CREATED);
+  // test('success, upload a picture', async ()=> {
+  //   await request(app.getHttpServer())
+  //     .post('/person')
+  //     .send({ ...createPersonDto })
+  //     .expect(HttpStatus.CREATED);
 
-    //   const loginResponse = await request(app.getHttpServer())
-    //     .post('/auth')
-    //     .send({ ...loginDto })
-    //     .expect(HttpStatus.CREATED);
+  //   const loginResponse = await request(app.getHttpServer())
+  //     .post('/auth')
+  //     .send({ ...loginDto })
+  //     .expect(HttpStatus.CREATED);
 
-    //   const response = await request(app.getHttpServer())
-    //     .post('/person/upload-picture')
-    //     .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
-    //     .attach('file', imgPath, {
-    //       filename: 'test.png',
-    //       // contentType: 'image/png',
-    //     })
-    //     .expect(HttpStatus.CREATED);
+  //   const response = await request(app.getHttpServer())
+  //     .post('/person/upload-picture')
+  //     .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+  //     .attach('file', imgPath, {
+  //       filename: 'test.png',
+  //       // contentType: 'image/png',
+  //     })
+  //     .expect(HttpStatus.CREATED);
 
-    //   expect(response.status).toBe(201)
-    //   expect(response.body).toEqual({
-    //     active: true,
-    //     createdAt: expect.any(String),
-    //     email: createPersonDto.email,
-    //     id: expect.any(Number),
-    //     name: createPersonDto.name,
-    //     passwordHash: expect.any(String),
-    //     picture: '1.png',
-    //     updatedAt: expect.any(String),
-    //   })
-    // });
+  //   expect(response.status).toBe(201)
+  //   expect(response.body).toEqual({
+  //     active: true,
+  //     createdAt: expect.any(String),
+  //     email: createPersonDto.email,
+  //     id: expect.any(Number),
+  //     name: createPersonDto.name,
+  //     passwordHash: expect.any(String),
+  //     picture: '1.png',
+  //     updatedAt: expect.any(String),
+  //   })
+  // });
 
   //   test('error, upload a picture unauthorized', async ()=> {
   //     await request(app.getHttpServer())
@@ -169,8 +169,8 @@ describe('PersonController (e2e)', () => {
   //   });
   // });
 
-  describe('/person (GET) - findAll', ()=> {
-    test('success, return all person', async ()=> {
+  describe('/person (GET) - findAll', () => {
+    test('success, return all person', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send({ ...createPersonDto })
@@ -183,9 +183,9 @@ describe('PersonController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get('/person')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatus.OK);
-      
+
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual([
         {
@@ -197,11 +197,11 @@ describe('PersonController (e2e)', () => {
           passwordHash: expect.any(String),
           picture: expect.any(String),
           updatedAt: expect.any(String),
-        }
+        },
       ]);
     });
 
-    test('error, person unauthorized', async ()=> {
+    test('error, person unauthorized', async () => {
       const response = await request(app.getHttpServer())
         .get('/person')
         .expect(HttpStatus.UNAUTHORIZED);
@@ -211,8 +211,8 @@ describe('PersonController (e2e)', () => {
     });
   });
 
-  describe('/person/:id (GET) - findOne', ()=> {
-    test('success,find a person by id', async ()=> {
+  describe('/person/:id (GET) - findOne', () => {
+    test('success,find a person by id', async () => {
       const personResponse = await request(app.getHttpServer())
         .post('/person')
         .send({ ...createPersonDto })
@@ -224,8 +224,8 @@ describe('PersonController (e2e)', () => {
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
-        .get(`/person/${ personResponse.body.id }`)
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .get(`/person/${personResponse.body.id}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(response.statusCode).toBe(200);
@@ -241,7 +241,7 @@ describe('PersonController (e2e)', () => {
       });
     });
 
-    test('error, person not found', async ()=> {
+    test('error, person not found', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send({ ...createPersonDto })
@@ -254,14 +254,14 @@ describe('PersonController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get('/person/7')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
       expect(response.body.message).toContain('Pessoa não encontrada.');
     });
 
-    test('error, person unauthorized', async ()=> {
+    test('error, person unauthorized', async () => {
       const response = await request(app.getHttpServer())
         .get('/person/7')
         .expect(HttpStatus.UNAUTHORIZED);
@@ -271,8 +271,8 @@ describe('PersonController (e2e)', () => {
     });
   });
 
-  describe('/person/:id (PATCH) - update', ()=> {
-    test('success,update a person', async ()=> {
+  describe('/person/:id (PATCH) - update', () => {
+    test('success,update a person', async () => {
       const personResponse = await request(app.getHttpServer())
         .post('/person')
         .send({ ...createPersonDto })
@@ -284,8 +284,8 @@ describe('PersonController (e2e)', () => {
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
-        .patch(`/person/${ personResponse.body.id }`)
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .patch(`/person/${personResponse.body.id}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .send({
           name: 'Gustavo',
         })
@@ -317,14 +317,14 @@ describe('PersonController (e2e)', () => {
 
       await request(app.getHttpServer())
         .patch('/person/7')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .send({
           name: 'Gustavo',
         })
         .expect(HttpStatus.NOT_FOUND);
     });
 
-    test('error, person unauthorized', async ()=> {
+    test('error, person unauthorized', async () => {
       const response = await request(app.getHttpServer())
         .patch('/person/7')
         .expect(HttpStatus.UNAUTHORIZED);
@@ -334,21 +334,21 @@ describe('PersonController (e2e)', () => {
     });
   });
 
-  describe('/person/:id (DELETE) - remove', ()=> {
-    test('success,remove a person by id', async ()=> {
+  describe('/person/:id (DELETE) - remove', () => {
+    test('success,remove a person by id', async () => {
       const personResponse = await request(app.getHttpServer())
         .post('/person')
         .send({ ...createPersonDto })
         .expect(HttpStatus.CREATED);
-      
+
       const loginResponse = await request(app.getHttpServer())
         .post('/auth')
         .send({ ...loginDto })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
-        .delete(`/person/${ personResponse.body.id }`)
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .delete(`/person/${personResponse.body.id}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(response.statusCode).toBe(200);
@@ -360,7 +360,7 @@ describe('PersonController (e2e)', () => {
         .post('/person')
         .send({ ...createPersonDto })
         .expect(HttpStatus.CREATED);
-      
+
       const loginResponse = await request(app.getHttpServer())
         .post('/auth')
         .send({ ...loginDto })
@@ -368,11 +368,11 @@ describe('PersonController (e2e)', () => {
 
       await request(app.getHttpServer())
         .delete('/person/7')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatus.NOT_FOUND);
     });
 
-    test('error, person unauthorized', async ()=> {
+    test('error, person unauthorized', async () => {
       const response = await request(app.getHttpServer())
         .delete('/person/7')
         .expect(HttpStatus.UNAUTHORIZED);

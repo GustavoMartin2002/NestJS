@@ -1,6 +1,6 @@
-import { HttpStatus, INestApplication } from "@nestjs/common";
-import { CreatePersonDto } from "src/person/dto/create-person.dto";
-import { LoginDto } from "src/auth/dto/login.dto";
+import { HttpStatus, INestApplication } from '@nestjs/common';
+import { CreatePersonDto } from 'src/person/dto/create-person.dto';
+import { LoginDto } from 'src/auth/dto/login.dto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -88,13 +88,13 @@ describe('MessagesController (e2e)', () => {
         .expect(HttpStatus.CREATED);
 
       const createMessageDto = {
-        text: "Hello, this is a test message",
+        text: 'Hello, this is a test message',
         toId: personResponse2.body.id,
-      }
+      };
 
       const response = await request(app.getHttpServer())
         .post('/messages')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .send(createMessageDto)
         .expect(HttpStatus.CREATED);
 
@@ -117,7 +117,7 @@ describe('MessagesController (e2e)', () => {
       });
     });
 
-    test('error, NotFoundException', async ()=> {
+    test('error, NotFoundException', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto1)
@@ -130,19 +130,19 @@ describe('MessagesController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/messages')
-        .set('Authorization', `Bearer ${ loginResponse.body.accessToken }`)
-        .send({ text: "Hello, this is a test message", toId: 7 })
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ text: 'Hello, this is a test message', toId: 7 })
         .expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
       expect(response.body.message).toContain('Pessoa não encontrada');
     });
 
-    test('error, unauthorized', async ()=> {
+    test('error, unauthorized', async () => {
       const response = await request(app.getHttpServer())
         .post('/messages')
         .expect(HttpStatus.UNAUTHORIZED);
-    
+
       expect(response.body.statusCode).toBe(401);
       expect(response.body.message).toContain('Usuário não logado!');
     });
@@ -168,7 +168,10 @@ describe('MessagesController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
@@ -208,7 +211,7 @@ describe('MessagesController (e2e)', () => {
     });
   });
 
-  describe('/messages/:id (GET) - findOne', ()=> {
+  describe('/messages/:id (GET) - findOne', () => {
     test('success, find one message', async () => {
       const personResponse1 = await request(app.getHttpServer())
         .post('/person')
@@ -228,7 +231,10 @@ describe('MessagesController (e2e)', () => {
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
@@ -255,7 +261,7 @@ describe('MessagesController (e2e)', () => {
       });
     });
 
-    test('error, NotFoundException message', async ()=> {
+    test('error, NotFoundException message', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto1)
@@ -286,7 +292,7 @@ describe('MessagesController (e2e)', () => {
   });
 
   describe('/messages/:id (PATCH) - update', () => {
-    test('success, update a message', async ()=> {
+    test('success, update a message', async () => {
       const personResponse1 = await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto1)
@@ -305,19 +311,22 @@ describe('MessagesController (e2e)', () => {
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
         .patch(`/messages/${messageResponse.body.id}`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is an updated test message" })
+        .send({ text: 'Hello, this is an updated test message' })
         .expect(HttpStatus.OK);
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         id: messageResponse.body.id,
-        text: "Hello, this is an updated test message",
+        text: 'Hello, this is an updated test message',
         read: messageResponse.body.read,
         date: expect.any(String),
         createdAt: messageResponse.body.createdAt,
@@ -352,20 +361,23 @@ describe('MessagesController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
         .patch(`/messages/7`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is an updated test message" })
+        .send({ text: 'Hello, this is an updated test message' })
         .expect(HttpStatus.NOT_FOUND);
 
       expect(response.body.statusCode).toBe(404);
       expect(response.body.message).toContain('Mensagem não encontrada.');
     });
 
-    test('error, ForbiddenException', async ()=> {
+    test('error, ForbiddenException', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto1)
@@ -383,23 +395,31 @@ describe('MessagesController (e2e)', () => {
 
       const loginResponse2 = await request(app.getHttpServer())
         .post('/auth')
-        .send({ email: createPersonDto2.email, password: createPersonDto2.password })
+        .send({
+          email: createPersonDto2.email,
+          password: createPersonDto2.password,
+        })
         .expect(HttpStatus.CREATED);
 
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse1.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
         .patch(`/messages/${messageResponse.body.id}`)
         .set('Authorization', `Bearer ${loginResponse2.body.accessToken}`)
-        .send({ text: "Hello, this is an updated test message", read: true })
+        .send({ text: 'Hello, this is an updated test message', read: true })
         .expect(HttpStatus.FORBIDDEN);
 
       expect(response.body.statusCode).toBe(403);
-      expect(response.body.message).toContain('Você não tem autorização para atualizar essa mensagem.');
+      expect(response.body.message).toContain(
+        'Você não tem autorização para atualizar essa mensagem.',
+      );
     });
 
     test('error, unauthorized', async () => {
@@ -415,18 +435,24 @@ describe('MessagesController (e2e)', () => {
 
       const loginResponse = await request(app.getHttpServer())
         .post('/auth')
-        .send({ email: createPersonDto1.email, password: createPersonDto1.password })
+        .send({
+          email: createPersonDto1.email,
+          password: createPersonDto1.password,
+        })
         .expect(HttpStatus.CREATED);
 
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
         .patch(`/messages/${messageResponse.body.id}`)
-        .send({ text: "Hello, this is an updated test message", read: true })
+        .send({ text: 'Hello, this is an updated test message', read: true })
         .expect(HttpStatus.UNAUTHORIZED);
 
       expect(response.body.statusCode).toBe(401);
@@ -434,7 +460,7 @@ describe('MessagesController (e2e)', () => {
     });
   });
 
-  describe('/messages/:id (DELETE) - remove', ()=> {
+  describe('/messages/:id (DELETE) - remove', () => {
     test('success, delete a message', async () => {
       const personResponse1 = await request(app.getHttpServer())
         .post('/person')
@@ -448,13 +474,19 @@ describe('MessagesController (e2e)', () => {
 
       const loginResponse = await request(app.getHttpServer())
         .post('/auth')
-        .send({ email: createPersonDto1.email, password: createPersonDto1.password })
+        .send({
+          email: createPersonDto1.email,
+          password: createPersonDto1.password,
+        })
         .expect(HttpStatus.CREATED);
 
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
@@ -500,7 +532,10 @@ describe('MessagesController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
@@ -512,7 +547,7 @@ describe('MessagesController (e2e)', () => {
       expect(response.body.message).toContain('Mensagem não encontrada.');
     });
 
-    test('error, ForbiddenException', async ()=> {
+    test('error, ForbiddenException', async () => {
       await request(app.getHttpServer())
         .post('/person')
         .send(createPersonDto1)
@@ -530,13 +565,19 @@ describe('MessagesController (e2e)', () => {
 
       const loginResponse2 = await request(app.getHttpServer())
         .post('/auth')
-        .send({ email: createPersonDto2.email, password: createPersonDto2.password })
+        .send({
+          email: createPersonDto2.email,
+          password: createPersonDto2.password,
+        })
         .expect(HttpStatus.CREATED);
 
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse1.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())
@@ -545,7 +586,9 @@ describe('MessagesController (e2e)', () => {
         .expect(HttpStatus.FORBIDDEN);
 
       expect(response.body.statusCode).toBe(403);
-      expect(response.body.message).toContain('Você não tem autorização para deletar essa mensagem.');
+      expect(response.body.message).toContain(
+        'Você não tem autorização para deletar essa mensagem.',
+      );
     });
 
     test('error, unauthorized', async () => {
@@ -567,7 +610,10 @@ describe('MessagesController (e2e)', () => {
       const messageResponse = await request(app.getHttpServer())
         .post('/messages')
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .send({ text: "Hello, this is a test message", toId: personResponse2.body.id })
+        .send({
+          text: 'Hello, this is a test message',
+          toId: personResponse2.body.id,
+        })
         .expect(HttpStatus.CREATED);
 
       const response = await request(app.getHttpServer())

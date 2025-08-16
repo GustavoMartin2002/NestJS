@@ -13,7 +13,6 @@ import appConfigMain from 'src/app/config/app.config.main';
 import * as request from 'supertest';
 import { RefreshTokenDto } from 'src/auth/dto/refresh-token.dto';
 import jwtConfigTest from 'src/auth/config/jwt.config-test';
-import { JwtModule } from '@nestjs/jwt';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
@@ -47,9 +46,9 @@ describe('AuthController (e2e)', () => {
         AuthModule,
       ],
     })
-    .overrideProvider(jwtConfigTest.KEY)
-    .useValue(jwtConfigTest())
-    .compile();
+      .overrideProvider(jwtConfigTest.KEY)
+      .useValue(jwtConfigTest())
+      .compile();
 
     app = module.createNestApplication();
     appConfigMain(app);
@@ -148,7 +147,9 @@ describe('AuthController (e2e)', () => {
         accessToken: response.body.accessToken,
         refreshToken: response.body.refreshToken,
       });
-      expect(response.body.refreshToken).not.toBe(loginResponse.body.refreshToken);
+      expect(response.body.refreshToken).not.toBe(
+        loginResponse.body.refreshToken,
+      );
     });
 
     test('error, return Unauthorized with an invalid refresh token', async () => {
@@ -176,8 +177,8 @@ describe('AuthController (e2e)', () => {
         .send(loginDto)
         .expect(HttpStatus.CREATED);
 
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
       const refreshTokenDto = {
         refreshToken: expiredLoginResponse.body.refreshToken,
       };

@@ -71,7 +71,9 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    personRepository = module.get<Repository<Person>>(getRepositoryToken(Person));
+    personRepository = module.get<Repository<Person>>(
+      getRepositoryToken(Person),
+    );
     hashingService = module.get<HashingServiceProtocol>(HashingServiceProtocol);
     jwtService = module.get<JwtService>(JwtService);
   });
@@ -87,25 +89,38 @@ describe('AuthService', () => {
     test('success, return tokens on successful login', async () => {
       jest.spyOn(personRepository, 'findOneBy').mockResolvedValue(mockPerson);
       jest.spyOn(hashingService, 'compare').mockResolvedValue(true);
-      jest.spyOn(jwtService, 'signAsync')
+      jest
+        .spyOn(jwtService, 'signAsync')
         .mockResolvedValueOnce('access_token')
         .mockResolvedValueOnce('refresh_token');
 
       const result = await service.login(mockLoginDto);
 
-      expect(personRepository.findOneBy).toHaveBeenCalledWith({ email: mockLoginDto.email, active: true });
-      expect(hashingService.compare).toHaveBeenCalledWith(mockLoginDto.password, mockPerson.passwordHash);
+      expect(personRepository.findOneBy).toHaveBeenCalledWith({
+        email: mockLoginDto.email,
+        active: true,
+      });
+      expect(hashingService.compare).toHaveBeenCalledWith(
+        mockLoginDto.password,
+        mockPerson.passwordHash,
+      );
       expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
-      expect(result).toEqual({ accessToken: 'access_token', refreshToken: 'refresh_token' });
+      expect(result).toEqual({
+        accessToken: 'access_token',
+        refreshToken: 'refresh_token',
+      });
     });
 
     test('error, UnauthorizedException when user is not found', async () => {
       jest.spyOn(personRepository, 'findOneBy').mockResolvedValue(null);
 
       const result = service.login(mockLoginDto);
-      
+
       await expect(result).rejects.toThrow(UnauthorizedException);
-      await expect(result).rejects.toHaveProperty('message', 'Usuário não autorizado!');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Usuário não autorizado!',
+      );
     });
 
     test('error, UnauthorizedException when password is invalid', async () => {
@@ -121,22 +136,36 @@ describe('AuthService', () => {
 
   describe('refreshTokens', () => {
     test('success, return new tokens if refresh token is valid', async () => {
-      jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue({ sub: mockPerson.id });
+      jest
+        .spyOn(jwtService, 'verifyAsync')
+        .mockResolvedValue({ sub: mockPerson.id });
       jest.spyOn(personRepository, 'findOneBy').mockResolvedValue(mockPerson);
-      jest.spyOn(jwtService, 'signAsync')
+      jest
+        .spyOn(jwtService, 'signAsync')
         .mockResolvedValueOnce('new_access_token')
         .mockResolvedValueOnce('new_refresh_token');
 
       const result = await service.refreshTokens(mockRefreshTokenDto);
 
-      expect(jwtService.verifyAsync).toHaveBeenCalledWith(mockRefreshTokenDto.refreshToken, mockJwtConfig);
-      expect(personRepository.findOneBy).toHaveBeenCalledWith({ id: mockPerson.id, active: true });
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith(
+        mockRefreshTokenDto.refreshToken,
+        mockJwtConfig,
+      );
+      expect(personRepository.findOneBy).toHaveBeenCalledWith({
+        id: mockPerson.id,
+        active: true,
+      });
       expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
-      expect(result).toEqual({ accessToken: 'new_access_token', refreshToken: 'new_refresh_token' });
+      expect(result).toEqual({
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
+      });
     });
 
     test('error, UnauthorizedException if refresh token is invalid', async () => {
-      jest.spyOn(jwtService, 'verifyAsync').mockRejectedValue(new Error('Token expirado'));
+      jest
+        .spyOn(jwtService, 'verifyAsync')
+        .mockRejectedValue(new Error('Token expirado'));
 
       const result = service.refreshTokens(mockRefreshTokenDto);
 
@@ -145,13 +174,18 @@ describe('AuthService', () => {
     });
 
     test('error, UnauthorizedException if user from token is not found', async () => {
-      jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue({ sub: mockPerson.id });
+      jest
+        .spyOn(jwtService, 'verifyAsync')
+        .mockResolvedValue({ sub: mockPerson.id });
       jest.spyOn(personRepository, 'findOneBy').mockResolvedValue(null);
 
       const result = service.refreshTokens(mockRefreshTokenDto);
 
       await expect(result).rejects.toThrow(UnauthorizedException);
-      await expect(result).rejects.toHaveProperty('message', 'Usuário não autorizado.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Usuário não autorizado.',
+      );
     });
   });
 });

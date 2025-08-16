@@ -1,8 +1,8 @@
-import { MessagesController } from "./messages.controller";
-import { PaginationDto } from "src/common/dto/pagination.dto";
-import { CreateMessageDto } from "./dto/create-message.dto";
-import { TokenPayloadDto } from "src/auth/dto/token-payload.dto";
-import { UpdateMessageDto } from "./dto/update-message.dto";
+import { MessagesController } from './messages.controller';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
 describe('MessagesController', () => {
   let controller: MessagesController;
@@ -16,15 +16,18 @@ describe('MessagesController', () => {
   };
 
   beforeEach(async () => {
-   controller = new MessagesController(messagesServiceMock as any);
-  })
+    controller = new MessagesController(messagesServiceMock as any);
+  });
 
   test('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
   test('create', async () => {
-    const createMessageDto: CreateMessageDto = { text: 'hello world!', toId: 2 };
+    const createMessageDto: CreateMessageDto = {
+      text: 'hello world!',
+      toId: 2,
+    };
     const tokenPayload: TokenPayloadDto = { sub: 1 } as any;
     const expected = { id: 1, ...createMessageDto };
 
@@ -32,7 +35,10 @@ describe('MessagesController', () => {
 
     const result = await controller.create(createMessageDto, tokenPayload);
 
-    expect(messagesServiceMock.create).toHaveBeenCalledWith(createMessageDto, tokenPayload);
+    expect(messagesServiceMock.create).toHaveBeenCalledWith(
+      createMessageDto,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
 
@@ -62,15 +68,26 @@ describe('MessagesController', () => {
 
   test('update', async () => {
     const messageId = 1;
-    const updateMessageDto: UpdateMessageDto = { text: 'hello updated world!', toId: 2 };
+    const updateMessageDto: UpdateMessageDto = {
+      text: 'hello updated world!',
+      toId: 2,
+    };
     const tokenPayload: TokenPayloadDto = { sub: 1 } as any;
     const expected = { id: 1, ...updateMessageDto };
 
     jest.spyOn(messagesServiceMock, 'update').mockResolvedValue(expected);
 
-    const result = await controller.update(messageId, updateMessageDto, tokenPayload);
+    const result = await controller.update(
+      messageId,
+      updateMessageDto,
+      tokenPayload,
+    );
 
-    expect(messagesServiceMock.update).toHaveBeenCalledWith(messageId, updateMessageDto, tokenPayload);
+    expect(messagesServiceMock.update).toHaveBeenCalledWith(
+      messageId,
+      updateMessageDto,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
 
@@ -83,8 +100,10 @@ describe('MessagesController', () => {
 
     const result = await controller.remove(messageId, tokenPayload);
 
-    expect(messagesServiceMock.remove).toHaveBeenCalledWith(messageId, tokenPayload);
+    expect(messagesServiceMock.remove).toHaveBeenCalledWith(
+      messageId,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
-
 });

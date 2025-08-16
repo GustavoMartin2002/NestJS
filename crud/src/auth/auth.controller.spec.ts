@@ -1,8 +1,8 @@
-import { AuthController } from "./auth.controller";
-import { LoginDto } from "./dto/login.dto";
-import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { AuthController } from './auth.controller';
+import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
-describe('AuthController', ()=> {
+describe('AuthController', () => {
   let controller: AuthController;
 
   const authServiceMock = {
@@ -10,7 +10,7 @@ describe('AuthController', ()=> {
     refreshTokens: jest.fn(),
   };
 
-  beforeEach(()=> {
+  beforeEach(() => {
     controller = new AuthController(authServiceMock as any);
   });
 
@@ -19,7 +19,10 @@ describe('AuthController', ()=> {
   });
 
   test('login', async () => {
-    const loginDto: LoginDto = { email: 'test@example.com', password: 'password' };
+    const loginDto: LoginDto = {
+      email: 'test@example.com',
+      password: 'password',
+    };
     const expected = { accessToken: 'token', refreshToken: 'refreshToken' };
 
     jest.spyOn(authServiceMock, 'login').mockResolvedValue(expected);
@@ -32,7 +35,10 @@ describe('AuthController', ()=> {
 
   test('refreshTokens', async () => {
     const refreshToken: RefreshTokenDto = { refreshToken: 'refreshToken' };
-    const expected = { accessToken: 'newToken', refreshToken: 'newRefreshToken' };
+    const expected = {
+      accessToken: 'newToken',
+      refreshToken: 'newRefreshToken',
+    };
 
     jest.spyOn(authServiceMock, 'refreshTokens').mockResolvedValue(expected);
 
@@ -41,4 +47,4 @@ describe('AuthController', ()=> {
     expect(authServiceMock.refreshTokens).toHaveBeenCalledWith(refreshToken);
     expect(result).toEqual(expected);
   });
-})
+});

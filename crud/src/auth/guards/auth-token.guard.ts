@@ -1,12 +1,18 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigType } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import { Request } from "express";
-import jwtConfig from "../config/jwt.config";
-import { REQUEST_TOKEN_PAYLOAD_KEY } from "../auth.constants";
-import { Repository } from "typeorm";
-import { Person } from "src/person/entities/person.entity";
-import { InjectRepository } from "@nestjs/typeorm";
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import jwtConfig from '../config/jwt.config';
+import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
+import { Repository } from 'typeorm';
+import { Person } from 'src/person/entities/person.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -22,7 +28,7 @@ export class AuthTokenGuard implements CanActivate {
     const request: Request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    if(!token) throw new UnauthorizedException('Usuário não logado!');
+    if (!token) throw new UnauthorizedException('Usuário não logado!');
 
     try {
       const payload = await this.jwtService.verifyAsync(
@@ -35,7 +41,7 @@ export class AuthTokenGuard implements CanActivate {
         active: true,
       });
 
-      if(!person) throw new UnauthorizedException('Usuário não autorizado!');
+      if (!person) throw new UnauthorizedException('Usuário não autorizado!');
 
       payload['person'] = person;
 

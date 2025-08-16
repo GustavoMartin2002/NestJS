@@ -55,12 +55,12 @@ export class MessagesService {
   // find one message
   async findOne(id: number) {
     const message = await this.messageRepository.findOne({
-      where: { 
+      where: {
         id,
       },
       relations: ['from', 'to'],
       order: {
-        id:'desc'
+        id: 'desc',
       },
       select: {
         from: {
@@ -80,7 +80,10 @@ export class MessagesService {
   }
 
   // create message
-  async create(createMessageDto: CreateMessageDto, tokenPayload: TokenPayloadDto) {
+  async create(
+    createMessageDto: CreateMessageDto,
+    tokenPayload: TokenPayloadDto,
+  ) {
     const { toId } = createMessageDto;
     const from = await this.personSevice.findOne(tokenPayload.sub);
     const to = await this.personSevice.findOne(toId);
@@ -113,11 +116,18 @@ export class MessagesService {
   }
 
   // update message
-  async update(id: number, updateMessageDto: UpdateMessageDto, tokenPayload: TokenPayloadDto) {
+  async update(
+    id: number,
+    updateMessageDto: UpdateMessageDto,
+    tokenPayload: TokenPayloadDto,
+  ) {
     const message = await this.findOne(id);
 
     if (!message) throw new NotFoundException('Mensagem não encontrada.');
-    if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar essa mensagem.');
+    if (message.from.id !== tokenPayload.sub)
+      throw new ForbiddenException(
+        'Você não tem autorização para atualizar essa mensagem.',
+      );
 
     message.text = updateMessageDto?.text ?? message.text;
     message.read = updateMessageDto?.read ?? message.read;
@@ -131,7 +141,10 @@ export class MessagesService {
     const message = await this.findOne(id);
 
     if (!message) throw new NotFoundException('Mensagem não encontrada.');
-    if (message.from.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para deletar essa mensagem.');
+    if (message.from.id !== tokenPayload.sub)
+      throw new ForbiddenException(
+        'Você não tem autorização para deletar essa mensagem.',
+      );
 
     await this.messageRepository.remove(message);
     return message;

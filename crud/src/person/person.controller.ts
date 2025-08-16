@@ -83,7 +83,8 @@ export class PersonController {
         .addFileTypeValidator({ fileType: /^image\/(jpeg|jpg|png)$/ })
         .addMaxSizeValidator({ maxSize: 10 * (1024 * 1024) })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
-    ) file: Express.Multer.File,
+    )
+    file: Express.Multer.File,
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
     return this.personService.uploadPicture(file, tokenPayload);

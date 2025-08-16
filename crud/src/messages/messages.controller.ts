@@ -32,9 +32,7 @@ import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 // DTO -> simple object -> nestjs: data validation / data tranform
 @Controller('messages')
 export class MessagesController {
-  constructor(
-    private readonly messageService: MessagesService,
-  ) {}
+  constructor(private readonly messageService: MessagesService) {}
 
   // find all messages
   // @HttpCode(200)

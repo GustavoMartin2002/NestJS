@@ -38,7 +38,7 @@ export class PersonService {
 
       const newPerson = this.personRepository.create(personData);
       await this.personRepository.save(newPerson);
-      
+
       return newPerson;
     } catch (error) {
       if (error.code === '23505') {
@@ -74,7 +74,11 @@ export class PersonService {
     return person;
   }
 
-  async update(id: number, updatePersonDto: UpdatePersonDto, tokenPayload: TokenPayloadDto) {
+  async update(
+    id: number,
+    updatePersonDto: UpdatePersonDto,
+    tokenPayload: TokenPayloadDto,
+  ) {
     const personData = {
       name: updatePersonDto?.name,
     };
@@ -92,8 +96,9 @@ export class PersonService {
     });
 
     if (!person) throw new NotFoundException('Pessoa não encontrada.');
-    if (person.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar.');
-    
+    if (person.id !== tokenPayload.sub)
+      throw new ForbiddenException('Você não tem autorização para atualizar.');
+
     await this.personRepository.save(person);
     return person;
   }
@@ -102,17 +107,19 @@ export class PersonService {
     const person = await this.findOne(id);
 
     if (!person) throw new NotFoundException('Pessoa não encontrada.');
-    if (person.id !== tokenPayload.sub) throw new ForbiddenException('Você não tem autorização para atualizar.');
+    if (person.id !== tokenPayload.sub)
+      throw new ForbiddenException('Você não tem autorização para atualizar.');
 
     await this.personRepository.remove(person);
     return person;
   }
 
   async uploadPicture(
-    file: Express.Multer.File, 
+    file: Express.Multer.File,
     tokenPayload: TokenPayloadDto,
   ) {
-    if (file.size < 1024) throw new BadRequestException('Arquivo muito pequeno!');
+    if (file.size < 1024)
+      throw new BadRequestException('Arquivo muito pequeno!');
 
     const person = await this.findOne(tokenPayload.sub);
     if (!person) throw new NotFoundException('Falha ao encontrar usuário.');

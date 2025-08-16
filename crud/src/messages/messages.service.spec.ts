@@ -1,19 +1,19 @@
-import { MessagesService } from "./messages.service";
-import { Repository } from "typeorm"
-import { Message } from "./entities/message.entity";
-import { PersonService } from "src/person/person.service";
-import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { CreateMessageDto } from "./dto/create-message.dto";
-import { ForbiddenException, NotFoundException } from "@nestjs/common";
-import { UpdateMessageDto } from "./dto/update-message.dto";
+import { MessagesService } from './messages.service';
+import { Repository } from 'typeorm';
+import { Message } from './entities/message.entity';
+import { PersonService } from 'src/person/person.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
-describe('MessageService', ()=> {
+describe('MessageService', () => {
   let service: MessagesService;
   let messageRepository: Repository<Message>;
   let personService: PersonService;
 
-  beforeEach( async() => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MessagesService,
@@ -32,15 +32,15 @@ describe('MessageService', ()=> {
           useValue: {
             findOne: jest.fn(),
           },
-        }
+        },
       ],
     }).compile();
     service = module.get(MessagesService);
     personService = module.get(PersonService);
     messageRepository = module.get(getRepositoryToken(Message));
   });
-  
-  test('must be defined', ()=> {
+
+  test('must be defined', () => {
     expect(service).toBeDefined();
     expect(messageRepository).toBeDefined();
     expect(personService).toBeDefined();
@@ -57,7 +57,8 @@ describe('MessageService', ()=> {
       const mockFromUser = { id: tokenPayload.sub, name: 'gustavo' };
       const mockToUser = { id: createMessageDto.toId, name: 'destinatario' };
 
-      jest.spyOn(personService, 'findOne')
+      jest
+        .spyOn(personService, 'findOne')
         .mockResolvedValueOnce(mockFromUser as any)
         .mockResolvedValueOnce(mockToUser as any);
 
@@ -77,8 +78,12 @@ describe('MessageService', ()=> {
         updatedAt: new Date(),
       };
 
-      jest.spyOn(messageRepository, 'create').mockReturnValue(saveMessage as any);
-      jest.spyOn(messageRepository, 'save').mockResolvedValue(saveMessage as any);
+      jest
+        .spyOn(messageRepository, 'create')
+        .mockReturnValue(saveMessage as any);
+      jest
+        .spyOn(messageRepository, 'save')
+        .mockResolvedValue(saveMessage as any);
 
       const result = await service.create(createMessageDto, tokenPayload);
 
@@ -111,73 +116,85 @@ describe('MessageService', ()=> {
       const result = service.create(createMessageDto, tokenPayload);
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Remetente não encontrado.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Remetente não encontrado.',
+      );
     });
 
     test('error, NotFoundException when to user is not found', async () => {
       const mockFromUser = { id: 1, name: 'Remetente' };
 
-      jest.spyOn(personService, 'findOne')
+      jest
+        .spyOn(personService, 'findOne')
         .mockResolvedValueOnce(mockFromUser as any)
         .mockResolvedValueOnce(null as any);
 
       const tokenPayload = { sub: 1 } as any;
-      const createMessageDto: CreateMessageDto = { text: 'Hello World!', toId: 2 };
+      const createMessageDto: CreateMessageDto = {
+        text: 'Hello World!',
+        toId: 2,
+      };
 
       const result = service.create(createMessageDto, tokenPayload);
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Destinatário não encontrado.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Destinatário não encontrado.',
+      );
     });
   });
 
   describe('findOne', () => {
-    test('success, find a message by id', async ()=> {
+    test('success, find a message by id', async () => {
       const idMessage = 1;
       const message = {
         id: idMessage,
-        text: "Hello World!",
+        text: 'Hello World!',
         read: false,
         date: new Date(),
         createdAt: new Date(),
         updateAt: new Date(),
         from: {
           id: 1,
-          name: "Remetente"
+          name: 'Remetente',
         },
         to: {
           id: 2,
-          name: "Destinatário"
+          name: 'Destinatário',
         },
       };
 
-      jest.spyOn(messageRepository, 'findOne').mockResolvedValue(message as any);
+      jest
+        .spyOn(messageRepository, 'findOne')
+        .mockResolvedValue(message as any);
 
       const result = await service.findOne(idMessage);
 
       expect(messageRepository.findOne).toHaveBeenCalledWith({
-        where: { 
+        where: {
           id: idMessage,
         },
         relations: ['from', 'to'],
         order: {
-          id: 'desc'
+          id: 'desc',
         },
         select: {
-        from: {
-          id: true,
-          name: true,
+          from: {
+            id: true,
+            name: true,
+          },
+          to: {
+            id: true,
+            name: true,
+          },
         },
-        to: {
-          id: true,
-          name: true,
-        },
-      },
       });
       expect(result).toEqual(message);
     });
 
-    test('error, NotFoundException message', async ()=> {
+    test('error, NotFoundException message', async () => {
       const idMessage = 1;
 
       jest.spyOn(messageRepository, 'findOne').mockResolvedValue(null as any);
@@ -185,11 +202,14 @@ describe('MessageService', ()=> {
       const result = service.findOne(idMessage);
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Mensagem não encontrada.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Mensagem não encontrada.',
+      );
     });
   });
 
-  describe('findAll', ()=> {
+  describe('findAll', () => {
     test('success, find all messages', async () => {
       const paginationDto = {
         limit: 10,
@@ -198,18 +218,18 @@ describe('MessageService', ()=> {
       const messages = [
         {
           id: 1,
-          text: "Hello World!",
+          text: 'Hello World!',
           read: false,
           date: new Date(),
           createdAt: new Date(),
           updateAt: new Date(),
           from: {
             id: 1,
-            name: "Remetente"
+            name: 'Remetente',
           },
           to: {
             id: 2,
-            name: "Destinatário"
+            name: 'Destinatário',
           },
         },
       ];
@@ -245,14 +265,19 @@ describe('MessageService', ()=> {
       const result = service.findAll();
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Mensagens não encontradas.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Mensagens não encontradas.',
+      );
     });
   });
 
-  describe('update', ()=> {
+  describe('update', () => {
     test('success, update a message', async () => {
       const idMessage = 1;
-      const updateMessageDto: UpdateMessageDto = { text: 'Hello Updated World!' };
+      const updateMessageDto: UpdateMessageDto = {
+        text: 'Hello Updated World!',
+      };
       const tokenPayload = { sub: 1 } as any;
 
       const message = {
@@ -274,18 +299,26 @@ describe('MessageService', ()=> {
 
       const updatedMessage = { ...message, ...updateMessageDto };
 
-      jest.spyOn(messageRepository, 'findOne').mockResolvedValue(message as any);
-      jest.spyOn(messageRepository, 'save').mockResolvedValue(updatedMessage as any);
+      jest
+        .spyOn(messageRepository, 'findOne')
+        .mockResolvedValue(message as any);
+      jest
+        .spyOn(messageRepository, 'save')
+        .mockResolvedValue(updatedMessage as any);
 
-      const result = await service.update(idMessage, updateMessageDto, tokenPayload);
+      const result = await service.update(
+        idMessage,
+        updateMessageDto,
+        tokenPayload,
+      );
 
       expect(messageRepository.findOne).toHaveBeenCalledWith({
-        where: { 
+        where: {
           id: idMessage,
         },
         relations: ['from', 'to'],
         order: {
-          id:'desc'
+          id: 'desc',
         },
         select: {
           from: {
@@ -304,7 +337,9 @@ describe('MessageService', ()=> {
 
     test('error, NotFoundException id message', async () => {
       const idMessage = 1;
-      const updateMessageDto: UpdateMessageDto = { text: 'Hello Updated World!' };
+      const updateMessageDto: UpdateMessageDto = {
+        text: 'Hello Updated World!',
+      };
       const tokenPayload = { sub: 1 } as any;
 
       jest.spyOn(service, 'findOne').mockResolvedValue(null as any);
@@ -312,7 +347,10 @@ describe('MessageService', ()=> {
       const result = service.update(idMessage, updateMessageDto, tokenPayload);
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Mensagem não encontrada.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Mensagem não encontrada.',
+      );
     });
 
     test('error, ForbiddenException message not from user', async () => {
@@ -326,7 +364,10 @@ describe('MessageService', ()=> {
       const result = service.update(idMessage, updatedMessage, tokenPayload);
 
       await expect(result).rejects.toThrow(ForbiddenException);
-      await expect(result).rejects.toHaveProperty('message', 'Você não tem autorização para atualizar essa mensagem.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Você não tem autorização para atualizar essa mensagem.',
+      );
     });
   });
 
@@ -342,12 +383,12 @@ describe('MessageService', ()=> {
       const result = await service.remove(idMessage, tokenPayload);
 
       expect(messageRepository.findOne).toHaveBeenCalledWith({
-        where: { 
+        where: {
           id: idMessage,
         },
         relations: ['from', 'to'],
         order: {
-          id:'desc'
+          id: 'desc',
         },
         select: {
           from: {
@@ -358,7 +399,7 @@ describe('MessageService', ()=> {
             id: true,
             name: true,
           },
-        }, 
+        },
       });
       expect(messageRepository.remove).toHaveBeenCalledWith(message);
       expect(result).toEqual(message);
@@ -373,7 +414,10 @@ describe('MessageService', ()=> {
       const result = service.remove(idMessage, tokenPayload);
 
       await expect(result).rejects.toThrow(NotFoundException);
-      await expect(result).rejects.toHaveProperty('message', 'Mensagem não encontrada.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Mensagem não encontrada.',
+      );
     });
 
     test('error, ForbiddenException message not from user', async () => {
@@ -386,7 +430,10 @@ describe('MessageService', ()=> {
       const result = service.remove(idMessage, tokenPayload);
 
       await expect(result).rejects.toThrow(ForbiddenException);
-      await expect(result).rejects.toHaveProperty('message', 'Você não tem autorização para deletar essa mensagem.');
+      await expect(result).rejects.toHaveProperty(
+        'message',
+        'Você não tem autorização para deletar essa mensagem.',
+      );
     });
   });
 });

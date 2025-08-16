@@ -1,22 +1,27 @@
-import { Repository } from "typeorm";
-import { PersonService } from "./person.service";
-import { Person } from "./entities/person.entity";
-import { HashingServiceProtocol } from "src/auth/hashing/hashing.service";
-import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { CreatePersonDto } from "./dto/create-person.dto";
-import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
-import * as path from "path";
-import * as fs from "fs/promises";
+import { Repository } from 'typeorm';
+import { PersonService } from './person.service';
+import { Person } from './entities/person.entity';
+import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { CreatePersonDto } from './dto/create-person.dto';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
+import * as path from 'path';
+import * as fs from 'fs/promises';
 
-jest.mock("fs/promises"); // mock module fs
+jest.mock('fs/promises'); // mock module fs
 
-describe('PersonService', ()=> {
+describe('PersonService', () => {
   let service: PersonService;
   let personRepository: Repository<Person>;
   let hashingService: HashingServiceProtocol;
 
-  beforeEach( async() => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PersonService,
@@ -44,14 +49,14 @@ describe('PersonService', ()=> {
     hashingService = module.get(HashingServiceProtocol);
   });
 
-  test('must be defined', ()=> {
+  test('must be defined', () => {
     expect(service).toBeDefined();
     expect(personRepository).toBeDefined();
     expect(hashingService).toBeDefined();
   });
 
-  describe('create', ()=> {
-    test('success, create a new Person', async ()=> {
+  describe('create', () => {
+    test('success, create a new Person', async () => {
       // ARRANGE
       const createPersonDto: CreatePersonDto = {
         email: 'gustavo@gmail.com',
@@ -72,7 +77,9 @@ describe('PersonService', ()=> {
       const result = await service.create(createPersonDto);
 
       //ASSERT
-      expect(hashingService.hash).toHaveBeenCalledWith(createPersonDto.password);
+      expect(hashingService.hash).toHaveBeenCalledWith(
+        createPersonDto.password,
+      );
       expect(personRepository.create).toHaveBeenCalledWith({
         name: createPersonDto.name,
         passwordHash,
@@ -82,7 +89,7 @@ describe('PersonService', ()=> {
       expect(result).toEqual(personData);
     });
 
-    test('error,conflict exception - email already exists', async ()=> {
+    test('error,conflict exception - email already exists', async () => {
       jest.spyOn(personRepository, 'save').mockRejectedValue({
         code: '23505',
       });
@@ -93,7 +100,9 @@ describe('PersonService', ()=> {
     });
 
     test('error, anything error', async () => {
-      jest.spyOn(personRepository, 'save').mockRejectedValue(new Error('error'));
+      jest
+        .spyOn(personRepository, 'save')
+        .mockRejectedValue(new Error('error'));
 
       await expect(service.create({} as any)).rejects.toThrow(
         new Error('error'),
@@ -101,9 +110,9 @@ describe('PersonService', ()=> {
     });
   });
 
-  describe('findOne', ()=> {
-    test('success, find a person by id', async ()=> {
-      const personId:number = 1
+  describe('findOne', () => {
+    test('success, find a person by id', async () => {
+      const personId: number = 1;
       const person = {
         id: personId,
         email: 'gustavo2002@gmail.com',
@@ -111,20 +120,22 @@ describe('PersonService', ()=> {
         passwordHash: 'HASH',
       };
 
-      jest.spyOn(personRepository, 'findOneBy').mockResolvedValue(person as any);
+      jest
+        .spyOn(personRepository, 'findOneBy')
+        .mockResolvedValue(person as any);
 
       const result = await service.findOne(person.id);
 
       expect(result).toEqual(person);
     });
 
-    test('error, person not found', async ()=> {
-     await expect(service.findOne(1)).rejects.toThrow(NotFoundException);
+    test('error, person not found', async () => {
+      await expect(service.findOne(1)).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('findAll', ()=> {
-    test('success, return all person', async ()=> {
+  describe('findAll', () => {
+    test('success, return all person', async () => {
       const limit = 10;
       const offset = 0;
       const personMock: Person[] = [
@@ -156,13 +167,13 @@ describe('PersonService', ()=> {
       });
     });
 
-    test('error, people not found', async ()=> {
+    test('error, people not found', async () => {
       await expect(service.findAll()).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', ()=> {
-    test('success, update a person', async ()=> {
+  describe('update', () => {
+    test('success, update a person', async () => {
       const personId = 1;
       const updatePersonDto = {
         name: 'Gustavo L. Martin',
@@ -177,22 +188,28 @@ describe('PersonService', ()=> {
       };
 
       jest.spyOn(hashingService, 'hash').mockResolvedValue(passwordHash);
-      jest.spyOn(personRepository, 'preload').mockResolvedValue(personData as any);
+      jest
+        .spyOn(personRepository, 'preload')
+        .mockResolvedValue(personData as any);
       jest.spyOn(personRepository, 'save').mockResolvedValue(personData as any);
 
-      const result = await service.update(personId, updatePersonDto, tokenPayload);
+      const result = await service.update(
+        personId,
+        updatePersonDto,
+        tokenPayload,
+      );
 
       expect(hashingService.hash).toHaveBeenCalledWith(
         updatePersonDto.password,
       );
       expect(personRepository.preload).toHaveBeenCalledWith({
-        ...personData
+        ...personData,
       });
       expect(personRepository.save).toHaveBeenCalledWith(personData);
       expect(result).toEqual(personData);
     });
 
-    test('error, person not found', async ()=> {
+    test('error, person not found', async () => {
       const personId = 1;
       const updatePersonDto = { name: 'Gustavo L. Martin' };
       const tokenPayload = { sub: personId } as any;
@@ -204,7 +221,7 @@ describe('PersonService', ()=> {
       ).rejects.toThrow(NotFoundException);
     });
 
-    test('error, unauthorized person', async ()=> {
+    test('error, unauthorized person', async () => {
       const personId = 1;
       const updatePersonDto = { name: 'Gustavo L. Martin' };
       const tokenPayload = { sub: 2 } as any;
@@ -213,7 +230,9 @@ describe('PersonService', ()=> {
         name: 'Gustavo',
       };
 
-      jest.spyOn(personRepository, 'preload').mockResolvedValue(existingPerson as any);
+      jest
+        .spyOn(personRepository, 'preload')
+        .mockResolvedValue(existingPerson as any);
 
       await expect(
         service.update(personId, updatePersonDto, tokenPayload),
@@ -221,8 +240,8 @@ describe('PersonService', ()=> {
     });
   });
 
-  describe('remove', ()=> {
-    test('success, remove a person', async ()=> {
+  describe('remove', () => {
+    test('success, remove a person', async () => {
       const personId = 1;
       const tokenPayload = { sub: personId } as any;
       const person = {
@@ -240,18 +259,18 @@ describe('PersonService', ()=> {
       expect(result).toEqual(person);
     });
 
-    test('error, person not found', async ()=> {
+    test('error, person not found', async () => {
       const personId = 1;
       const tokenPayload = { sub: personId } as any;
 
       jest.spyOn(service, 'findOne').mockResolvedValue(null as any);
 
-      await expect(
-        service.remove(personId, tokenPayload),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.remove(personId, tokenPayload)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    test('error, person unauthorized', async ()=> {
+    test('error, person unauthorized', async () => {
       const personId = 1;
       const tokenPayload = { sub: 2 } as any;
       const existingPerson = {
@@ -261,14 +280,14 @@ describe('PersonService', ()=> {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(existingPerson as any);
 
-      await expect(
-        service.remove(personId, tokenPayload),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(personId, tokenPayload)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
-  describe('upload picture', ()=> {
-    test('success, upload picture for person', async ()=> {
+  describe('upload picture', () => {
+    test('success, upload picture for person', async () => {
       const mockFile = {
         originalname: 'test.jpg',
         size: 2000,
@@ -279,7 +298,7 @@ describe('PersonService', ()=> {
         name: 'Gustavo L. Martin',
         email: 'gustavo@gmail.com',
       } as Person;
-      const tokenPayload = { sub:  mockPerson.id } as any;
+      const tokenPayload = { sub: mockPerson.id } as any;
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPerson);
       jest.spyOn(personRepository, 'save').mockResolvedValue({
@@ -303,20 +322,20 @@ describe('PersonService', ()=> {
       });
     });
 
-    test('error, small file', async ()=> {
+    test('error, small file', async () => {
       const mockFile = {
         originalname: 'test.jpg',
         size: 1023, // < 1024
         buffer: Buffer.from('small content'),
       } as Express.Multer.File;
       const tokenPayload = { sub: 1 } as any;
-      
+
       await expect(
         service.uploadPicture(mockFile, tokenPayload),
       ).rejects.toThrow(BadRequestException);
     });
 
-    test('error, person not found', async ()=> {
+    test('error, person not found', async () => {
       const mockFile = {
         originalname: 'test.jpg',
         size: 2000,

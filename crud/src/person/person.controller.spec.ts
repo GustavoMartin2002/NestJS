@@ -1,10 +1,10 @@
-import { PaginationDto } from "src/common/dto/pagination.dto";
-import { CreatePersonDto } from "./dto/create-person.dto";
-import { PersonController } from "./person.controller";
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { CreatePersonDto } from './dto/create-person.dto';
+import { PersonController } from './person.controller';
 
-describe('PersonController', ()=>{
+describe('PersonController', () => {
   let controller: PersonController;
-  
+
   const personServiceMock = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -14,7 +14,7 @@ describe('PersonController', ()=>{
     uploadPicture: jest.fn(),
   };
 
-  beforeEach(()=> {
+  beforeEach(() => {
     controller = new PersonController(personServiceMock as any);
   });
 
@@ -22,8 +22,12 @@ describe('PersonController', ()=>{
     expect(controller).toBeDefined();
   });
 
-  test('create', async ()=> {
-    const createPersonDto: CreatePersonDto = { email: 'gustavo@gmail.com', password: 'password', name: 'Gustavo' };
+  test('create', async () => {
+    const createPersonDto: CreatePersonDto = {
+      email: 'gustavo@gmail.com',
+      password: 'password',
+      name: 'Gustavo',
+    };
     const expected = { id: 1, ...createPersonDto };
 
     jest.spyOn(personServiceMock, 'create').mockResolvedValue(expected);
@@ -34,7 +38,7 @@ describe('PersonController', ()=>{
     expect(result).toEqual(expected);
   });
 
-  test('findAll', async ()=> {
+  test('findAll', async () => {
     const paginationDto: PaginationDto = { offset: 0, limit: 10 };
     const expected = [{ id: 1, email: 'gustavo@gmail.com', name: 'Gustavo' }];
 
@@ -46,9 +50,14 @@ describe('PersonController', ()=>{
     expect(result).toEqual(expected);
   });
 
-  test('findOne', async ()=> {
+  test('findOne', async () => {
     const personId = 1;
-    const expected = { id: 1, email: 'gustavo@gmail.com', password: 'password', name: 'Gustavo' } as any;
+    const expected = {
+      id: 1,
+      email: 'gustavo@gmail.com',
+      password: 'password',
+      name: 'Gustavo',
+    } as any;
 
     jest.spyOn(personServiceMock, 'findOne').mockResolvedValue(expected);
 
@@ -58,21 +67,29 @@ describe('PersonController', ()=>{
     expect(result).toEqual(expected);
   });
 
-  test('update', async ()=> {
-    const personId = 1
+  test('update', async () => {
+    const personId = 1;
     const updatePersonDto = { name: 'Updated Name' } as any;
     const tokenPayload = { sub: 1 } as any;
     const expected = { id: 1, ...updatePersonDto };
 
     jest.spyOn(personServiceMock, 'update').mockResolvedValue(expected);
 
-    const result = await controller.update(personId, updatePersonDto, tokenPayload);
+    const result = await controller.update(
+      personId,
+      updatePersonDto,
+      tokenPayload,
+    );
 
-    expect(personServiceMock.update).toHaveBeenCalledWith(personId, updatePersonDto, tokenPayload);
+    expect(personServiceMock.update).toHaveBeenCalledWith(
+      personId,
+      updatePersonDto,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
 
-  test('remove', async ()=> {
+  test('remove', async () => {
     const personId = 1;
     const tokenPayload = { sub: 1 } as any;
     const expected = { id: personId, ...tokenPayload };
@@ -81,12 +98,18 @@ describe('PersonController', ()=>{
 
     const result = await controller.remove(personId, tokenPayload);
 
-    expect(personServiceMock.remove).toHaveBeenCalledWith(personId, tokenPayload);
+    expect(personServiceMock.remove).toHaveBeenCalledWith(
+      personId,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
 
-  test('upload-picture', async ()=> {
-    const file: Express.Multer.File = { originalname: 'test.jpg', mimetype: 'image/jpeg' } as any;
+  test('upload-picture', async () => {
+    const file: Express.Multer.File = {
+      originalname: 'test.jpg',
+      mimetype: 'image/jpeg',
+    } as any;
     const tokenPayload = { sub: 1 } as any;
     const expected = { id: tokenPayload, ...file };
 
@@ -94,7 +117,10 @@ describe('PersonController', ()=>{
 
     const result = await controller.uploadPicture(file, tokenPayload);
 
-    expect(personServiceMock.uploadPicture).toHaveBeenCalledWith(file, tokenPayload);
+    expect(personServiceMock.uploadPicture).toHaveBeenCalledWith(
+      file,
+      tokenPayload,
+    );
     expect(result).toEqual(expected);
   });
 });

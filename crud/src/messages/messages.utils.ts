@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MessageUtils {
@@ -10,6 +10,6 @@ export class MessageUtils {
 @Injectable()
 export class MessageUtilsMock {
   reverseString(str: string) {
-    return str
+    return str;
   }
 }
