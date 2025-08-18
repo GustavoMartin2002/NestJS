@@ -15,6 +15,7 @@ import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { ResponsePersonDto } from './dto/response-person.dto';
 
 @Injectable()
 export class PersonService {
@@ -24,7 +25,7 @@ export class PersonService {
     private readonly hashingService: HashingServiceProtocol,
   ) {}
 
-  async create(createPersonDto: CreatePersonDto): Promise<Person> {
+  async create(createPersonDto: CreatePersonDto): Promise<ResponsePersonDto> {
     try {
       const passwordHash = await this.hashingService.hash(
         createPersonDto.password,
@@ -49,7 +50,7 @@ export class PersonService {
     }
   }
 
-  async findAll(paginationDto?: PaginationDto): Promise<Person[]> {
+  async findAll(paginationDto?: PaginationDto): Promise<ResponsePersonDto[]> {
     const { limit = 10, offset = 0 } = paginationDto ?? {};
     const person = await this.personRepository.find({
       take: limit,
@@ -64,7 +65,7 @@ export class PersonService {
     return person;
   }
 
-  async findOne(id: number): Promise<Person> {
+  async findOne(id: number): Promise<ResponsePersonDto> {
     const person = await this.personRepository.findOneBy({
       id,
     });
@@ -78,9 +79,10 @@ export class PersonService {
     id: number,
     updatePersonDto: UpdatePersonDto,
     tokenPayload: TokenPayloadDto,
-  ): Promise<Person> {
+  ): Promise<ResponsePersonDto> {
     const personData = {
       name: updatePersonDto?.name,
+      email: updatePersonDto?.email,
     };
 
     if (updatePersonDto?.password) {
@@ -103,7 +105,7 @@ export class PersonService {
     return person;
   }
 
-  async remove(id: number, tokenPayload: TokenPayloadDto): Promise<Person> {
+  async remove(id: number, tokenPayload: TokenPayloadDto): Promise<ResponsePersonDto> {
     const person = await this.findOne(id);
 
     if (!person) throw new NotFoundException('Pessoa não encontrada.');
@@ -117,7 +119,7 @@ export class PersonService {
   async uploadPicture(
     file: Express.Multer.File,
     tokenPayload: TokenPayloadDto,
-  ): Promise<Person> {
+  ): Promise<ResponsePersonDto> {
     if (file.size < 1024)
       throw new BadRequestException('Arquivo muito pequeno!');
 
