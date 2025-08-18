@@ -24,7 +24,7 @@ export class PersonService {
     private readonly hashingService: HashingServiceProtocol,
   ) {}
 
-  async create(createPersonDto: CreatePersonDto) {
+  async create(createPersonDto: CreatePersonDto): Promise<Person> {
     try {
       const passwordHash = await this.hashingService.hash(
         createPersonDto.password,
@@ -49,7 +49,7 @@ export class PersonService {
     }
   }
 
-  async findAll(paginationDto?: PaginationDto) {
+  async findAll(paginationDto?: PaginationDto): Promise<Person[]> {
     const { limit = 10, offset = 0 } = paginationDto ?? {};
     const person = await this.personRepository.find({
       take: limit,
@@ -64,7 +64,7 @@ export class PersonService {
     return person;
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Person> {
     const person = await this.personRepository.findOneBy({
       id,
     });
@@ -78,7 +78,7 @@ export class PersonService {
     id: number,
     updatePersonDto: UpdatePersonDto,
     tokenPayload: TokenPayloadDto,
-  ) {
+  ): Promise<Person> {
     const personData = {
       name: updatePersonDto?.name,
     };
@@ -103,21 +103,21 @@ export class PersonService {
     return person;
   }
 
-  async remove(id: number, tokenPayload: TokenPayloadDto) {
+  async remove(id: number, tokenPayload: TokenPayloadDto): Promise<Person> {
     const person = await this.findOne(id);
 
     if (!person) throw new NotFoundException('Pessoa não encontrada.');
     if (person.id !== tokenPayload.sub)
       throw new ForbiddenException('Você não tem autorização para atualizar.');
 
-    await this.personRepository.remove(person);
+    await this.personRepository.delete(person.id);
     return person;
   }
 
   async uploadPicture(
     file: Express.Multer.File,
     tokenPayload: TokenPayloadDto,
-  ) {
+  ): Promise<Person> {
     if (file.size < 1024)
       throw new BadRequestException('Arquivo muito pequeno!');
 

@@ -139,6 +139,7 @@ describe('AuthController (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/auth/refresh')
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .send(refreshTokenDto)
         .expect(HttpStatus.CREATED);
 
@@ -163,7 +164,7 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
 
       expect(response.body.statusCode).toBe(401);
-      expect(response.body.message).toBe('invalid token');
+      expect(response.body.message).toBe('Usuário não logado!');
     });
 
     test('error, return Unauthorized if refresh token is expired', async () => {
@@ -189,7 +190,7 @@ describe('AuthController (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
 
       expect(response.body.statusCode).toBe(401);
-      expect(response.body.message).toContain('jwt expired');
+      expect(response.body.message).toContain('Usuário não logado!');
     });
   });
 });

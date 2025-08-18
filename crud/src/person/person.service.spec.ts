@@ -33,7 +33,7 @@ describe('PersonService', () => {
             findOneBy: jest.fn(),
             find: jest.fn(),
             preload: jest.fn(),
-            remove: jest.fn(),
+            delete: jest.fn(),
           },
         },
         {
@@ -250,12 +250,12 @@ describe('PersonService', () => {
       };
 
       jest.spyOn(service, 'findOne').mockResolvedValue(person as any);
-      jest.spyOn(personRepository, 'remove').mockResolvedValue(person as any);
+      jest.spyOn(personRepository, 'delete').mockResolvedValue(person as any);
 
       const result = await service.remove(personId, tokenPayload);
 
       expect(service.findOne).toHaveBeenCalledWith(personId);
-      expect(personRepository.remove).toHaveBeenCalledWith(person);
+      expect(personRepository.delete).toHaveBeenCalledWith(person.id);
       expect(result).toEqual(person);
     });
 

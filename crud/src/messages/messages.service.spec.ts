@@ -24,7 +24,7 @@ describe('MessageService', () => {
             save: jest.fn(),
             findOne: jest.fn(),
             find: jest.fn(),
-            remove: jest.fn(),
+            delete: jest.fn(),
           },
         },
         {
@@ -378,7 +378,7 @@ describe('MessageService', () => {
       const message = { id: idMessage, from: { id: 1 } } as any;
 
       jest.spyOn(messageRepository, 'findOne').mockResolvedValue(message);
-      jest.spyOn(messageRepository, 'remove').mockResolvedValue(message);
+      jest.spyOn(messageRepository, 'delete').mockResolvedValue(message);
 
       const result = await service.remove(idMessage, tokenPayload);
 
@@ -401,7 +401,7 @@ describe('MessageService', () => {
           },
         },
       });
-      expect(messageRepository.remove).toHaveBeenCalledWith(message);
+      expect(messageRepository.delete).toHaveBeenCalledWith(message.id);
       expect(result).toEqual(message);
     });
 

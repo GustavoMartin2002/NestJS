@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { PersonService } from 'src/person/person.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import { ResponseMessageDto } from './dto/response-message.dto';
 
 // Scope.DEFAULT -> the provider is a singleton
 // Scope.REQUEST -> the provider is instantiated on each request
@@ -26,7 +27,7 @@ export class MessagesService {
   ) {}
 
   // find all messages
-  async findAll(paginationDto?: PaginationDto) {
+  async findAll(paginationDto?: PaginationDto): Promise<ResponseMessageDto[]> {
     const { limit = 10, offset = 0 } = paginationDto ?? {};
     const messages = await this.messageRepository.find({
       take: limit, // page display
@@ -53,7 +54,7 @@ export class MessagesService {
   }
 
   // find one message
-  async findOne(id: number) {
+  async findOne(id: number): Promise<ResponseMessageDto> {
     const message = await this.messageRepository.findOne({
       where: {
         id,
@@ -83,7 +84,7 @@ export class MessagesService {
   async create(
     createMessageDto: CreateMessageDto,
     tokenPayload: TokenPayloadDto,
-  ) {
+  ): Promise<ResponseMessageDto> {
     const { toId } = createMessageDto;
     const from = await this.personSevice.findOne(tokenPayload.sub);
     const to = await this.personSevice.findOne(toId);
@@ -120,7 +121,7 @@ export class MessagesService {
     id: number,
     updateMessageDto: UpdateMessageDto,
     tokenPayload: TokenPayloadDto,
-  ) {
+  ): Promise<ResponseMessageDto> {
     const message = await this.findOne(id);
 
     if (!message) throw new NotFoundException('Mensagem não encontrada.');
@@ -137,7 +138,10 @@ export class MessagesService {
   }
 
   // delete message
-  async remove(id: number, tokenPayload: TokenPayloadDto) {
+  async remove(
+    id: number,
+    tokenPayload: TokenPayloadDto,
+  ): Promise<ResponseMessageDto> {
     const message = await this.findOne(id);
 
     if (!message) throw new NotFoundException('Mensagem não encontrada.');
@@ -146,7 +150,7 @@ export class MessagesService {
         'Você não tem autorização para deletar essa mensagem.',
       );
 
-    await this.messageRepository.remove(message);
+    await this.messageRepository.delete(message.id);
     return message;
   }
 }

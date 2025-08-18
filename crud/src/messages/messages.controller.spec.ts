@@ -15,7 +15,7 @@ describe('MessagesController', () => {
     remove: jest.fn(),
   };
 
-  beforeEach(async () => {
+  beforeEach(() => {
     controller = new MessagesController(messagesServiceMock as any);
   });
 

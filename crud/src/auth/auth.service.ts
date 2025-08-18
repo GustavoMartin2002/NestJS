@@ -8,6 +8,7 @@ import { ConfigType } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ResponseTokensDto } from './dto/response-tokens.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<ResponseTokensDto> {
     const person = await this.personRepository.findOneBy({
       email: loginDto.email,
       active: true,
@@ -38,23 +39,9 @@ export class AuthService {
     return this.createTokens(person);
   }
 
-  private async createTokens(person: Person) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.signJwtAsync(person.id, this.jwtConfiguration.jwtTtl, {
-        email: person.email,
-      }),
-      this.signJwtAsync(person.id, this.jwtConfiguration.jwtRefreshTtl, {
-        timestamp: Date.now(),
-      }),
-    ]);
-
-    return {
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  async refreshTokens(refreshTokenDto: RefreshTokenDto) {
+  async refreshTokens(
+    refreshTokenDto: RefreshTokenDto,
+  ): Promise<ResponseTokensDto> {
     try {
       const { sub } = await this.jwtService.verifyAsync(
         refreshTokenDto.refreshToken,
@@ -72,6 +59,22 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
+  }
+
+  private async createTokens(person: Person) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.signJwtAsync(person.id, this.jwtConfiguration.jwtTtl, {
+        email: person.email,
+      }),
+      this.signJwtAsync(person.id, this.jwtConfiguration.jwtRefreshTtl, {
+        timestamp: Date.now(),
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   private async signJwtAsync<T>(sub: number, expiresIn: number, payload?: T) {
